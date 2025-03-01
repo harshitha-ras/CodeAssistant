@@ -1,5 +1,5 @@
 streamlit==1.25.0
-chromadb==0.3.26
+chromadb==0.3.29
 sentence-transformers==2.2.2
 nltk==3.8.1
 datasets==2.14.4
