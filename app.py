@@ -21,8 +21,11 @@ import sqlite3  # Now uses pysqlite3
 # Set up OpenAI API key (replace with your actual key)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Load The Stack dataset (streaming mode)
-ds = load_dataset("bigcode/the-stack", split="train", streaming=True)
+from datasets import load_dataset
+
+# Specify a particular revision or version of the dataset
+ds = load_dataset("bigcode/the-stack", split="train", streaming=True, revision="main")
+
 
 # Chunking function
 def chunk_text(text, max_tokens=512):
