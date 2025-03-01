@@ -7,4 +7,5 @@ openai==0.27.8
 pysqlite3-binary==0.5.2  # Ensures compatible SQLite version for ChromaDB
 # Specify Python version (Streamlit Cloud will use this)
 python-dotenv==1.0.0     # For environment variable management (optional)
-pydantic-settings
+pydantic<2
+huggingface-hub==0.25.1
