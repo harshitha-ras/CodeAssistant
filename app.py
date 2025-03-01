@@ -7,6 +7,16 @@ import streamlit as st
 from datasets import load_dataset
 from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
+import pysqlite3
+import sys
+from chromadb.config import Settings
+
+# Replace sqlite3 with pysqlite3
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
+import sqlite3  # Now uses pysqlite3
+
+
 
 # Set up OpenAI API key (replace with your actual key)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -40,9 +50,16 @@ for example in ds.take(100):  # Adjust the number of examples as needed
     if code:
         chunks.extend(chunk_text(code))
 
-# Initialize ChromaDB client and collection
-client = chromadb.Client()
+
+
+
+# Initialize ChromaDB with SQLite backend
+client = chromadb.Client(Settings(
+    chroma_db_impl="sqlite",
+    persist_directory=".chromadb"  # Directory to store the database files
+))
 collection = client.get_or_create_collection("coding_assistant")
+
 
 # Load embedding model (SentenceTransformer)
 model = SentenceTransformer('all-MiniLM-L6-V2')
