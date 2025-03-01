@@ -9,7 +9,7 @@ from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 
 # Set up OpenAI API key (replace with your actual key)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Load The Stack dataset (streaming mode)
 ds = load_dataset("bigcode/the-stack", split="train", streaming=True)
