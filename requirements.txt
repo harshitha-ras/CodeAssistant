@@ -1,13 +1,13 @@
-streamlit==1.25.0               # For building and deploying the app
-chromadb==0.3.29                # For vector database and semantic search
-sentence-transformers==2.2.2    # For generating embeddings
+streamlit               # For building and deploying the app
+chromadb==0.6.3                # For vector database and semantic search
+sentence-transformers==3.4.1    # For generating embeddings
 nltk==3.8.1                     # For text chunking (e.g., using sent_tokenize)
 openai==0.27.8                  # For interacting with OpenAI's GPT models
 pysqlite3-binary==0.5.2         # Ensures compatible SQLite version for ChromaDB
 python-dotenv==1.0.0            # Optional: For managing environment variables locally
 pydantic<2                      # Ensures compatibility with ChromaDB
 datasets>=2.17.0                # For loading and streaming datasets (e.g., Hugging Face datasets)
-huggingface-hub>=0.13.4         # For authenticating and interacting with Hugging Face datasets/models
+huggingface-hub>=0.25.0         # For authenticating and interacting with Hugging Face datasets/models
 fsspec>=2023.1.0                # Required by datasets for file system operations
 transformers>=4.26.0            # For Hugging Face integration and model usage
 torch==2.0.1                    # PyTorch for Sentence Transformers
