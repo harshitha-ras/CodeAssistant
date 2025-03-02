@@ -12,7 +12,18 @@ from huggingface_hub import login
 
 # Authenticate APIs using secrets from Streamlit Cloud
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-login(token=st.secrets["HF_TOKEN"])
+login(token=[st.secrets["HF_TOKEN"]])
+
+import streamlit as st
+
+# Debug: Display available secrets
+st.write(st.secrets)
+
+import nltk
+
+# Download the punkt tokenizer
+nltk.download('punkt')
+
 
 # Load dataset (with error handling)
 try:
@@ -47,11 +58,9 @@ for example in ds.take(num_examples):
     if code:
         chunks.extend(chunk_text(code))
 
-# Initialize ChromaDB with SQLite backend
-client = chromadb.Client(Settings(
-    chroma_db_impl="sqlite",
-    persist_directory=".chromadb"
-))
+# Initialize a persistent client
+client = chromadb.PersistentClient(path=".chromadb")
+
 collection = client.get_or_create_collection("coding_assistant")
 
 # Load embedding model (SentenceTransformer)
@@ -94,6 +103,3 @@ if query:
                 st.error("No relevant documents found.")
         except Exception as e:
             st.error(f"An error occurred: {e}")
-
-import streamlit as st
-st.write(st.secrets)
