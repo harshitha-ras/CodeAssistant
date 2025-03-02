@@ -7,28 +7,18 @@ import streamlit as st
 from datasets import load_dataset
 from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
-import pysqlite3
-import sys
 from chromadb.config import Settings
 from huggingface_hub import login
 
-# Replace sqlite3 with pysqlite3
-sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
-
-import sqlite3  # Now uses pysqlite3
-
-
-
-# Set up OpenAI API key (replace with your actual key)
+# Authenticate APIs using secrets from Streamlit Cloud
 openai.api_key = st.secrets["OPENAI_API_KEY"]
-
 login(token=st.secrets["HF_TOKEN"])
 
-from datasets import load_dataset
-
-# Specify a particular revision or version of the dataset
-ds = load_dataset("bigcode/the-stack", split="train", streaming=True, revision="main")
-
+# Load dataset (with error handling)
+try:
+    ds = load_dataset("bigcode/the-stack", split="train", streaming=True, revision="main")
+except Exception as e:
+    st.error(f"Failed to load dataset: {e}")
 
 # Chunking function
 def chunk_text(text, max_tokens=512):
@@ -49,23 +39,20 @@ def chunk_text(text, max_tokens=512):
 
     return chunks
 
-# Extract and chunk data from The Stack dataset (limit examples for testing)
+# Process dataset into chunks (limit examples dynamically)
+num_examples = st.slider("Number of examples to process", min_value=10, max_value=100, step=10)
 chunks = []
-for example in ds.take(100):  # Adjust the number of examples as needed
-    code = example.get('content', '')  # Assuming 'content' contains the code snippets
+for example in ds.take(num_examples):
+    code = example.get('content', '')  # Check dataset structure if 'content' is invalid
     if code:
         chunks.extend(chunk_text(code))
-
-
-
 
 # Initialize ChromaDB with SQLite backend
 client = chromadb.Client(Settings(
     chroma_db_impl="sqlite",
-    persist_directory=".chromadb"  # Directory to store the database files
+    persist_directory=".chromadb"
 ))
 collection = client.get_or_create_collection("coding_assistant")
-
 
 # Load embedding model (SentenceTransformer)
 model = SentenceTransformer('all-MiniLM-L6-V2')
@@ -79,7 +66,7 @@ for chunk in chunks:
         ids=[str(uuid.uuid4())]
     )
 
-# Streamlit app interface for user queries
+# Streamlit interface for user queries
 st.title("Coding Assistant")
 query = st.text_input("Enter your question:")
 
@@ -90,19 +77,23 @@ if query:
             query_embedding = model.encode(query)
             results = collection.query(query_embeddings=[query_embedding], n_results=5)
 
-            # Prepare context for LLM prompt
-            context = "\n".join(results['documents'])
-            prompt = f"Context:\n{context}\n\nQuestion: {query}"
+            # Prepare context for LLM prompt (handle missing documents)
+            if "documents" in results:
+                context = "\n".join(results["documents"])
+                prompt = f"Context:\n{context}\n\nQuestion: {query}"
 
-            # Generate response using OpenAI's GPT model (text-davinci-003)
-            response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=prompt,
-                max_tokens=200,
-                temperature=0.7,
-            )
-
-            # Display response in Streamlit app
-            st.write(response["choices"][0]["text"])
+                # Generate response using OpenAI's GPT model (text-davinci-003)
+                response = openai.Completion.create(
+                    engine="text-davinci-003",
+                    prompt=prompt,
+                    max_tokens=200,
+                    temperature=0.7,
+                )
+                st.write(response["choices"][0]["text"])
+            else:
+                st.error("No relevant documents found.")
         except Exception as e:
             st.error(f"An error occurred: {e}")
+
+import streamlit as st
+st.write(st.secrets)
