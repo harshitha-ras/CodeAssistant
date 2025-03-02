@@ -8,8 +8,12 @@ from datasets import load_dataset
 from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 from huggingface_hub import login
-from chromadb import PersistentClient
-from chromadb.utils import embedding_functions
+from chromadb.config import Settings
+from chromadb import Client, PersistentClient
+from huggingface_hub import HfApi, HfFolder, Repository, hf_hub_url
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
+
 
 # Authenticate APIs using secrets from Streamlit Cloud
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -22,7 +26,7 @@ nltk.download('punkt', quiet=True)
 @st.cache_resource
 def load_dataset_cached():
     try:
-        return load_dataset("bigcode/the-stack", split="train", streaming=True, revision="main", timeout=30)
+        return load_dataset("bigcode/the-stack", split="train", streaming=True, revision="main", timeout=120)
     except Exception as e:
         st.error(f"Failed to load dataset: {e}")
         return None
@@ -65,7 +69,8 @@ client = get_chroma_client()
 model = load_embedding_model()
 
 # Create embedding function
-sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+sentence_transformer_ef = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+
 
 # Create or get collection
 collection = client.get_or_create_collection("coding_assistant", embedding_function=sentence_transformer_ef)
