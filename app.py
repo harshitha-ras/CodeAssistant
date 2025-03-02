@@ -10,6 +10,7 @@ from sentence_transformers import SentenceTransformer
 import pysqlite3
 import sys
 from chromadb.config import Settings
+from huggingface_hub import login
 
 # Replace sqlite3 with pysqlite3
 sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
@@ -20,6 +21,8 @@ import sqlite3  # Now uses pysqlite3
 
 # Set up OpenAI API key (replace with your actual key)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+login(token=st.secrets["HF_TOKEN"])
 
 from datasets import load_dataset
 
